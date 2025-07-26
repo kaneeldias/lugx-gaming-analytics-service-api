@@ -19,6 +19,7 @@ func main() {
 	router.GET("/", healthCheck)
 	router.POST("/record-page-view", recordPageView)
 	router.POST("/record-click", recordClick)
+	router.POST("/record-page-time", recordPageTime)
 
 	err = router.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 	if err != nil {
@@ -69,4 +70,23 @@ func recordClick(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "Click recorded successfully"})
+}
+
+func recordPageTime(c *gin.Context) {
+	var request RecordPageTimeRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	ipAddress := c.ClientIP()
+
+	err := SavePageTime(request.Path, request.TimeSpent, ipAddress)
+	if err != nil {
+		log.Println("Error saving page time: ", err)
+		c.JSON(500, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Page time recorded successfully"})
 }

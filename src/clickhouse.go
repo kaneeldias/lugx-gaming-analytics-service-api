@@ -79,3 +79,17 @@ func SaveClick(path string, element string, ipAddress string) error {
 
 	return nil
 }
+
+func SavePageTime(path string, timeSpent int64, ipAddress string) error {
+	conn, err := GetDatabaseConnection()
+	if err != nil {
+		return fmt.Errorf("error getting database connection: %w", err)
+	}
+
+	query := "INSERT INTO page_times (path, time_spent, ip_address) VALUES (?, ?, ?)"
+	if err := conn.Exec(context.Background(), query, path, timeSpent, ipAddress); err != nil {
+		return fmt.Errorf("error executing query: %w", err)
+	}
+
+	return nil
+}
