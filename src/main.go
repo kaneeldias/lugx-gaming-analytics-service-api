@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	err := InitializeDatabase()
+	_, err := GetDatabaseConnection()
 	if err != nil {
 		log.Fatal("Error initializing database: ", err)
 	}
@@ -17,7 +17,7 @@ func main() {
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 	router.GET("/", healthCheck)
-	router.GET("/orders", getAllOrders)
+	router.POST("/record-page-view", recordPageView)
 
 	err = router.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 	if err != nil {
@@ -32,13 +32,22 @@ func healthCheck(c *gin.Context) {
 	})
 }
 
-func getAllOrders(c *gin.Context) {
-	orders, err := GetAllOrders()
+func recordPageView(c *gin.Context) {
+	var request RecordPageViewRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	ipAddress := c.ClientIP()
+	println(ipAddress)
+
+	err := SavePageView(request.Path, ipAddress)
 	if err != nil {
-		log.Println("Error fetching orders: ", err)
+		log.Println("Error saving page view: ", err)
 		c.JSON(500, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	c.JSON(200, orders)
+	c.JSON(200, gin.H{"message": "Page view recorded successfully"})
 }

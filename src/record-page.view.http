@@ -1,0 +1,6 @@
+POST http://localhost:3000/record-page-view
+Content-Type: application/json
+
+{
+  "path": "/"
+}
