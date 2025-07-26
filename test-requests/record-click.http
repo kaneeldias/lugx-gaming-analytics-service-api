@@ -1,0 +1,7 @@
+POST http://localhost:3000/record-click
+Content-Type: application/json
+
+{
+  "path": "/",
+  "element": "div"
+}

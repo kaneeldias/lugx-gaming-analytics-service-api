@@ -18,6 +18,7 @@ func main() {
 	router.Use(CORSMiddleware())
 	router.GET("/", healthCheck)
 	router.POST("/record-page-view", recordPageView)
+	router.POST("/record-click", recordClick)
 
 	err = router.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 	if err != nil {
@@ -40,7 +41,6 @@ func recordPageView(c *gin.Context) {
 	}
 
 	ipAddress := c.ClientIP()
-	println(ipAddress)
 
 	err := SavePageView(request.Path, ipAddress)
 	if err != nil {
@@ -50,4 +50,23 @@ func recordPageView(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "Page view recorded successfully"})
+}
+
+func recordClick(c *gin.Context) {
+	var request RecordClickRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	ipAddress := c.ClientIP()
+
+	err := SaveClick(request.Path, request.Element, ipAddress)
+	if err != nil {
+		log.Println("Error saving click: ", err)
+		c.JSON(500, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Click recorded successfully"})
 }

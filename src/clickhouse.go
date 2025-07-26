@@ -65,3 +65,17 @@ func SavePageView(path string, ipAddress string) error {
 
 	return nil
 }
+
+func SaveClick(path string, element string, ipAddress string) error {
+	conn, err := GetDatabaseConnection()
+	if err != nil {
+		return fmt.Errorf("error getting database connection: %w", err)
+	}
+
+	query := "INSERT INTO clicks (path, element, ip_address) VALUES (?, ?, ?)"
+	if err := conn.Exec(context.Background(), query, path, element, ipAddress); err != nil {
+		return fmt.Errorf("error executing query: %w", err)
+	}
+
+	return nil
+}
